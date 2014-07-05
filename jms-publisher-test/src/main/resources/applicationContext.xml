@@ -7,16 +7,18 @@
         http://www.springframework.org/schema/context/spring-context-2.5.xsd"
 	default-autowire="byName">
 
+	<bean id="jmsConnectionFactory" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="java:comp/env/jms/ConnectionFactory"></property>
+	</bean>
+	
+	<bean id="destination" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="java:comp/env/jms/Queue"></property>
+	</bean>
+
 	<!-- 配置connectionFactory -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
 		destroy-method="stop">
-		<property name="connectionFactory">
-			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
-				<property name="brokerURL">
-					<value>tcp://127.0.0.1:61616</value>
-				</property>
-			</bean>
-		</property>
+		<property name="connectionFactory" ref="jmsConnectionFactory" />
 		<property name="maxConnections" value="100"></property>
 	</bean>
 
@@ -30,12 +32,6 @@
 		<property name="pubSubDomain" value="true" />
 	</bean>
 
-	<!-- 发送消息的目的地（一个队列） -->
-	<bean id="destination" class="org.apache.activemq.command.ActiveMQTopic">
-		<!-- 设置消息队列的名字 -->
-		<constructor-arg index="0" value="subject" />
-	</bean>
-
 	<!-- 消息监听 -->
 	<bean id="listenerContainer"
 		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
@@ -46,7 +42,7 @@
 		<property name="pubSubNoLocal" value="false"></property>
 	</bean>
 
-	<bean id="messageReceiver" class="com.liuyan.jms.consumer.ProxyJMSConsumer">
+	<bean id="messageReceiver" class="com.ivanagxu.test.jms.ProxyJMSConsumer">
 		<property name="jmsTemplate" ref="jmsTemplate"></property>
 	</bean>
 </beans>
